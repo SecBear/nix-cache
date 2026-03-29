@@ -1,0 +1,66 @@
+name: niks3-push
+on:
+  workflow_call:
+    inputs:
+      installables:
+        description: Newline-delimited Nix installables to build and push.
+        required: true
+        type: string
+      server-url:
+        description: niks3 write-plane URL.
+        required: true
+        type: string
+      max-concurrent-uploads:
+        description: niks3 client upload concurrency.
+        required: false
+        type: number
+        default: 30
+      niks3-cli-flake-ref:
+        description: Flake reference that provides the niks3 CLI package.
+        required: false
+        type: string
+        default: github:Mic92/niks3/v1.4.0#niks3
+    secrets:
+      NIKS3_API_TOKEN:
+        description: Static niks3 API token used for authenticated pushes.
+        required: true
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      NIKS3_SERVER_URL: ${{ inputs.server-url }}
+      NIKS3_API_TOKEN: ${{ secrets.NIKS3_API_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+      - name: Build requested installables
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t installables < <(printf '%s\n' '${{ inputs.installables }}' | sed '/^[[:space:]]*$/d')
+
+          if [ "${#installables[@]}" -eq 0 ]; then
+            echo "installables input is empty" >&2
+            exit 1
+          fi
+
+          nix build --no-link "${installables[@]}"
+      - name: Push closures to niks3
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t installables < <(printf '%s\n' '${{ inputs.installables }}' | sed '/^[[:space:]]*$/d')
+          mapfile -t paths < <(nix path-info "${installables[@]}")
+
+          nix shell '${{ inputs.niks3-cli-flake-ref }}' -c \
+            niks3 push \
+              --server-url "$NIKS3_SERVER_URL" \
+              --auth-token "$NIKS3_API_TOKEN" \
+              --max-concurrent-uploads '${{ inputs.max-concurrent-uploads }}' \
+              "${paths[@]}"

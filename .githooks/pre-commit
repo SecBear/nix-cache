@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+echo "pre-commit: formatting"
+nix run .#fmt >/dev/null
+git add -u
+
+echo "pre-commit: lint"
+nix run .#lint >/dev/null
+
+echo "pre-commit: flake check"
+nix flake check --no-build >/dev/null

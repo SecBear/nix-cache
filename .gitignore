@@ -1,0 +1,15 @@
+.direnv/
+.state/
+.envrc.local
+.DS_Store
+result
+result-*
+
+infra/opentofu/.terraform/
+infra/opentofu/stack.auto.tfvars.json
+infra/opentofu/*.tfstate
+infra/opentofu/*.tfstate.*
+infra/opentofu/crash.log
+infra/opentofu/crash.*.log
+
+fly/fly.toml

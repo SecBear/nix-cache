@@ -1,0 +1,21 @@
+{
+  "stack_name": "secbear-cache",
+  "cloudflare_account_id": "replace-with-your-cloudflare-account-id",
+  "cloudflare_zone_id": "replace-with-your-cloudflare-zone-id",
+  "zone_name": "secbear.dev",
+  "cache_subdomain": "cache",
+  "r2_bucket_name": null,
+  "r2_location": "enam",
+  "r2_jurisdiction": "default",
+  "r2_storage_class": "Standard",
+  "r2_s3_region": "auto",
+  "fly_app_name": "secbear-cache-niks3",
+  "fly_org_slug": null,
+  "fly_primary_region": "iad",
+  "fly_vm_cpu_kind": "shared",
+  "fly_vm_cpus": 1,
+  "fly_vm_memory": "256mb",
+  "fly_swap_size_mb": 512,
+  "niks3_s3_concurrency": 20,
+  "niks3_enable_read_proxy": false
+}

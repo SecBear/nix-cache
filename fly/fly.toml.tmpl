@@ -1,0 +1,43 @@
+app = "__APP_NAME__"
+primary_region = "__PRIMARY_REGION__"
+kill_signal = "SIGTERM"
+kill_timeout = 30
+swap_size_mb = __SWAP_SIZE_MB__
+
+[build]
+  image = "__IMAGE__"
+
+[deploy]
+  strategy = "rolling"
+
+[env]
+__ENV_BLOCK__
+
+[[files]]
+  guest_path = "/run/secrets/niks3-signing-key"
+  secret_name = "NIKS3_SIGNING_KEY_FILE_B64"
+
+[http_service]
+  internal_port = 5751
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 25
+    hard_limit = 50
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval = "15s"
+    method = "GET"
+    path = "/health"
+    timeout = "5s"
+
+[[vm]]
+  cpu_kind = "__VM_CPU_KIND__"
+  cpus = __VM_CPUS__
+  memory = "__VM_MEMORY__"
+
