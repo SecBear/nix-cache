@@ -19,7 +19,7 @@ The public read path goes straight to R2. The Fly app only handles uploads, GC, 
 
 - Lowest practical cloud cost for `niks3`
 - Public repo friendly: no raw secrets, no state, no private IP assumptions
-- One root command surface: `just plan`, `just up`, `just deploy`, `just gc`, `just down`
+- Main operational commands: `just plan`, `just up`, `just deploy`, `just gc`, `just down`
 - Tracked example config in `infra/opentofu/stack.auto.tfvars.example.json`, with the real environment file kept local
 - Secret-source agnostic: `bws run`, shell exports, or any other env injector all work
 
@@ -79,9 +79,19 @@ direnv allow
 ```
 
 1. Run `just init-config` to create a local `infra/opentofu/stack.auto.tfvars.json` from the tracked example.
+
 1. Edit `infra/opentofu/stack.auto.tfvars.json` with your real local values, including `cloudflare_account_id` and `cloudflare_zone_id`.
+
 1. If your Fly account can access more than one organization, set `fly_org_slug` in `infra/opentofu/stack.auto.tfvars.json`.
+
 1. Make sure your required secrets are available either as direct environment variables or via Bitwarden Secrets Manager.
+
+1. Enable the repo-managed Git hooks:
+
+   ```sh
+   git config core.hooksPath .githooks
+   ```
+
 1. Run `just up`.
 
 Useful follow-up commands:
@@ -92,7 +102,7 @@ Useful follow-up commands:
 - `just status`
 - `just down`
 
-This repo also ships a repo-managed pre-commit hook under `.githooks/pre-commit` for `fmt`, `lint`, and `nix flake check --no-build`.
+This repo ships a repo-managed pre-commit hook under `.githooks/pre-commit` for `fmt`, `lint`, and `nix flake check --no-build`. Clones must opt in with `git config core.hooksPath .githooks`.
 
 ## Secret Model
 
@@ -136,7 +146,7 @@ OpenTofu state is intended to stay free of runtime secrets. Neon is provisioned 
 The repo stays environment-variable first:
 
 - if the required env vars already exist, commands use them directly
-- otherwise, if `BWS_ACCESS_TOKEN` and `BWS_PROJECT_ID` are set and `bws` is on `PATH`, `plan`, `deploy`, `up`, and `down` transparently re-exec through Bitwarden Secrets Manager
+- otherwise, if `BWS_ACCESS_TOKEN` and `BWS_PROJECT_ID` are set and `bws` is on `PATH`, `plan`, `deploy`, `up`, `gc`, and `down` transparently re-exec through Bitwarden Secrets Manager
 
 This flake does not package `bws`. The command only needs it to already be on your system `PATH`.
 
@@ -198,9 +208,9 @@ The reusable workflow is:
 
 It uses the current static-token model. That is the right initial setup for a personal cache. OIDC is optional and can come later.
 
-The workflow intentionally makes both the write-plane URL and the `niks3` CLI flake reference explicit inputs, so callers do not accidentally target this repo's live infrastructure by default.
+The workflow intentionally makes both the write-plane URL and the `niks3` CLI flake reference explicit inputs, so callers do not accidentally target this repo's live infrastructure by default. The default CLI ref is pinned to the same upstream `niks3` version this repo currently tracks.
 
-Minimal caller example:
+Minimal caller example from this repo:
 
 ```yaml
 jobs:
@@ -211,6 +221,20 @@ jobs:
       installables: |
         .#yourPackage
         .#yourOtherPackage
+    secrets:
+      NIKS3_API_TOKEN: ${{ secrets.NIKS3_API_TOKEN }}
+```
+
+Example from another repository:
+
+```yaml
+jobs:
+  cache:
+    uses: SecBear/nix-cache/.github/workflows/niks3-push.yml@main
+    with:
+      server-url: https://secbear-cache-niks3.fly.dev
+      installables: |
+        .#yourPackage
     secrets:
       NIKS3_API_TOKEN: ${{ secrets.NIKS3_API_TOKEN }}
 ```

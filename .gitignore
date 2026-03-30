@@ -9,6 +9,7 @@ infra/opentofu/.terraform/
 infra/opentofu/stack.auto.tfvars.json
 infra/opentofu/*.tfstate
 infra/opentofu/*.tfstate.*
+infra/opentofu/*.tfplan
 infra/opentofu/crash.log
 infra/opentofu/crash.*.log
 

@@ -210,9 +210,10 @@
 
             if ! flyctl apps show "$app_name" >/dev/null 2>&1; then
               if [ -z "$fly_org_slug" ]; then
-                org_count="$(flyctl orgs list --json | jq 'length')"
+                orgs_json="$(flyctl orgs list --json)"
+                org_count="$(jq 'length' <<<"$orgs_json")"
                 if [ "$org_count" -eq 1 ]; then
-                  fly_org_slug="$(flyctl orgs list --json | jq -r 'keys[0]')"
+                  fly_org_slug="$(jq -r '.[0].slug' <<<"$orgs_json")"
                 else
                   echo "fly app $app_name does not exist and fly_org_slug is unset" >&2
                   echo "set fly_org_slug in ${tfVarsFile}, or make sure exactly one Fly org is accessible" >&2

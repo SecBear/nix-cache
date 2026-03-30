@@ -10,7 +10,6 @@
 
         settings.global.excludes = [
           ".direnv/**"
-          ".terraform/**"
           ".state/**"
           ".envrc"
           ".envrc.local"

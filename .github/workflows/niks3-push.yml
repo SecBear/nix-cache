@@ -32,6 +32,9 @@ jobs:
     env:
       NIKS3_SERVER_URL: ${{ inputs.server-url }}
       NIKS3_API_TOKEN: ${{ secrets.NIKS3_API_TOKEN }}
+      NIKS3_INSTALLABLES: ${{ inputs.installables }}
+      NIKS3_CLI_FLAKE_REF: ${{ inputs.niks3-cli-flake-ref }}
+      NIKS3_MAX_CONCURRENT: ${{ inputs.max-concurrent-uploads }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -42,7 +45,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          mapfile -t installables < <(printf '%s\n' '${{ inputs.installables }}' | sed '/^[[:space:]]*$/d')
+          mapfile -t installables < <(printf '%s\n' "$NIKS3_INSTALLABLES" | sed '/^[[:space:]]*$/d')
 
           if [ "${#installables[@]}" -eq 0 ]; then
             echo "installables input is empty" >&2
@@ -55,12 +58,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          mapfile -t installables < <(printf '%s\n' '${{ inputs.installables }}' | sed '/^[[:space:]]*$/d')
+          mapfile -t installables < <(printf '%s\n' "$NIKS3_INSTALLABLES" | sed '/^[[:space:]]*$/d')
           mapfile -t paths < <(nix path-info "${installables[@]}")
 
-          nix shell '${{ inputs.niks3-cli-flake-ref }}' -c \
+          nix shell "$NIKS3_CLI_FLAKE_REF" -c \
             niks3 push \
               --server-url "$NIKS3_SERVER_URL" \
               --auth-token "$NIKS3_API_TOKEN" \
-              --max-concurrent-uploads '${{ inputs.max-concurrent-uploads }}' \
+              --max-concurrent-uploads "$NIKS3_MAX_CONCURRENT" \
               "${paths[@]}"
