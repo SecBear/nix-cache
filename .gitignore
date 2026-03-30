@@ -14,3 +14,4 @@ infra/opentofu/crash.log
 infra/opentofu/crash.*.log
 
 fly/fly.toml
+.skelesearch/
