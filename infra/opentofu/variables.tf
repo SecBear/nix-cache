@@ -128,3 +128,9 @@ variable "niks3_enable_read_proxy" {
   type        = bool
   default     = false
 }
+
+variable "oidc_github_subject_patterns" {
+  description = "GitHub Actions OIDC subject patterns allowed to push. Example: [\"repo:MyOrg/*:*\"]. Empty list disables GitHub OIDC."
+  type        = list(string)
+  default     = []
+}

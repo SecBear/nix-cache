@@ -12,4 +12,17 @@ locals {
     ? "${var.cloudflare_account_id}.r2.cloudflarestorage.com"
     : "${var.cloudflare_account_id}.${var.r2_jurisdiction}.r2.cloudflarestorage.com"
   )
+
+  # OIDC config written to the Fly guest via [[files]].
+  # When no subject patterns are configured the providers map is empty, which
+  # effectively disables OIDC while keeping the [[files]] stanza unconditional.
+  oidc_config_json = jsonencode({
+    providers = length(var.oidc_github_subject_patterns) == 0 ? {} : {
+      github = {
+        issuer        = "https://token.actions.githubusercontent.com"
+        audience      = local.fly_public_url
+        bound_subject = var.oidc_github_subject_patterns
+      }
+    }
+  })
 }

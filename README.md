@@ -206,9 +206,11 @@ The reusable workflow is:
 
 - `.github/workflows/niks3-push.yml`
 
-It uses the current static-token model. That is the right initial setup for a personal cache. OIDC is optional and can come later.
+It uses GitHub Actions OIDC for authentication — no static secret is needed in calling workflows. The workflow requests an OIDC token with the niks3 write-plane URL as the audience. The server validates the token against the subject patterns configured in `oidc_github_subject_patterns`.
 
 The workflow intentionally makes both the write-plane URL and the `niks3` CLI flake reference explicit inputs, so callers do not accidentally target this repo's live infrastructure by default. The default CLI ref is pinned to the same upstream `niks3` version this repo currently tracks.
+
+> **Note:** `id-token: write` permission is required, which means fork pull requests cannot push to the cache. This is intentional.
 
 Minimal caller example from this repo:
 
@@ -221,8 +223,6 @@ jobs:
       installables: |
         .#yourPackage
         .#yourOtherPackage
-    secrets:
-      NIKS3_API_TOKEN: ${{ secrets.NIKS3_API_TOKEN }}
 ```
 
 Example from another repository:
@@ -235,8 +235,6 @@ jobs:
       server-url: https://secbear-cache-niks3.fly.dev
       installables: |
         .#yourPackage
-    secrets:
-      NIKS3_API_TOKEN: ${{ secrets.NIKS3_API_TOKEN }}
 ```
 
 ## Operational Notes
@@ -251,7 +249,4 @@ jobs:
 
 ## Current Limits
 
-- This scaffold uses static API-token auth for CI uploads first.
-- Reusable CI push workflow is included, but OIDC is not wired into the Fly deployment yet.
-- OIDC can be added later, but it needs one more secret-file materialization path on Fly.
 - Fly is managed with `fly.toml` and `flyctl`, not Terraform, because Fly's Terraform provider is not a good primary path as of March 28, 2026.

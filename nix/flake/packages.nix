@@ -231,6 +231,8 @@
             fi
 
             signing_key_b64="$(printf '%s' "$NIKS3_SIGNING_KEY" | base64 | tr -d '\n')"
+            oidc_config_json="$(tofu -chdir=${tfDir} output -raw oidc_config_json)"
+            oidc_config_b64="$(printf '%s' "$oidc_config_json" | base64 | tr -d '\n')"
 
             merged_json="$(
               jq -n \
@@ -238,13 +240,15 @@
                 --arg NIKS3_DB "$NIKS3_DB" \
                 --arg NIKS3_S3_ACCESS_KEY "$NIKS3_S3_ACCESS_KEY" \
                 --arg NIKS3_S3_SECRET_KEY "$NIKS3_S3_SECRET_KEY" \
-                --arg NIKS3_SIGNING_KEY_FILE_B64 "$signing_key_b64" '
+                --arg NIKS3_SIGNING_KEY_FILE_B64 "$signing_key_b64" \
+                --arg NIKS3_OIDC_CONFIG_B64 "$oidc_config_b64" '
                   {
                     NIKS3_API_TOKEN: $NIKS3_API_TOKEN,
                     NIKS3_DB: $NIKS3_DB,
                     NIKS3_S3_ACCESS_KEY: $NIKS3_S3_ACCESS_KEY,
                     NIKS3_S3_SECRET_KEY: $NIKS3_S3_SECRET_KEY,
-                    NIKS3_SIGNING_KEY_FILE_B64: $NIKS3_SIGNING_KEY_FILE_B64
+                    NIKS3_SIGNING_KEY_FILE_B64: $NIKS3_SIGNING_KEY_FILE_B64,
+                    NIKS3_OIDC_CONFIG_B64: $NIKS3_OIDC_CONFIG_B64
                   }
                 '
             )"

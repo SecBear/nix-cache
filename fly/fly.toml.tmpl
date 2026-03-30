@@ -17,6 +17,10 @@ __ENV_BLOCK__
   guest_path = "/run/secrets/niks3-signing-key"
   secret_name = "NIKS3_SIGNING_KEY_FILE_B64"
 
+[[files]]
+  guest_path = "/run/secrets/niks3-oidc-config"
+  secret_name = "NIKS3_OIDC_CONFIG_B64"
+
 [http_service]
   internal_port = 5751
   force_https = true
